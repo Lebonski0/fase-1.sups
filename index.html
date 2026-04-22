@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Darmherstel Protocol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0b0d;
+            --surface: #121418;
+            --surface-light: #1c1f26;
+            --accent: #2dd4bf;
+            --accent-bg: rgba(45, 212, 191, 0.1);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-faint: #475569;
+            --border: #262a33;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --radius: 12px;
+            --radius-sm: 6px;
+            --font-main: 'Inter', sans-serif;
+            --font-title: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- Scrollbar --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        header {
+            padding: 80px 0 40px;
+            text-align: center;
+            background: radial-gradient(circle at center, var(--accent-bg) 0%, transparent 70%);
+        }
+
+        h1 {
+            font-family: var(--font-title);
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin-bottom: 16px;
+            background: linear-gradient(to bottom right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        /* --- Navigation --- */
+        .nav-sticky {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            margin-bottom: 60px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-wrap {
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(18, 20, 24, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            overflow-x: auto;
+            max-width: 100%;
+            scrollbar-width: none;
+        }
+        .nav-wrap::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            padding: 8px 18px;
+            border-radius: 100px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: var(--font-main);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            background: var(--surface-light);
+        }
+
+        .nav-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 4px 20px rgba(45, 212, 191, 0.3);
+        }
+
+        /* --- Sections --- */
+        section {
+            margin-bottom: 100px;
+            scroll-margin-top: 100px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--text-faint);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .section-duration {
+            font-size: 14px;
+            font-family: var(--font-mono);
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .intro-text {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        /* --- Tables & Mobile Cards --- */
+        .table-container {
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: #0d0f12;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px;
+            background: var(--surface-light);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-faint);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        .sup-name { font-weight: 600; color: #fff; display: block; margin-bottom: 4px; }
+        .sup-dose { font-family: var(--font-mono); color: var(--accent); font-size: 13px; font-weight: 500; }
+        .sup-timing { color: var(--text-muted); font-size: 13px; margin-top: 4px; display: block; }
+        .sup-note { color: var(--text-faint); font-size: 12px; line-height: 1.5; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; }
+
+        /* --- Mobile Table Transformation --- */
+        @media (max-width: 640px) {
+            thead { display: none; }
+            tr {
+                display: flex;
+                flex-direction: column;
+                padding: 16px;
+                border-bottom: 1px solid var(--border);
+            }
+            td {
+                padding: 0;
+                border: none;
+                margin-bottom: 12px;
+            }
+            td:last-child { margin-bottom: 0; }
+            
+            /* Add labels for mobile */
+            td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 9px;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: var(--text-faint);
+                margin-bottom: 4px;
+            }
+            
+            /* Hide labels for name and priority to keep it clean */
+            td[data-label="Supplement"]::before,
+            td[data-label="Focus"]::before,
+            td[data-label="Prioriteit"]::before { display: none; }
+
+            .sup-name { font-size: 18px; }
+        }
+
+        /* --- Badges --- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .badge-essential { background: rgba(34, 197, 94, 0.1); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-recommended { background: rgba(59, 130, 246, 0.1); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .badge-optional { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.2); }
+        .badge-food { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+
+        /* --- Schedule Grid --- */
+        .sched-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .sched-card {
+            background: #0d0f12;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+        }
+
+        .sched-time {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sched-time::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+        /* --- Lifestyle Grid --- */
+        .lifestyle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .lifestyle-item {
+            background: #0d0f12;
+            padding: 24px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .sched-item {
+            font-size: 13px;
+            color: var(--text-main);
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .sched-item:last-child { border-bottom: none; }
+
+        /* --- Info Boxes --- */
+        /* --- Back to Top --- */
+        .back-to-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 20px rgba(45, 212, 191, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .info-box-success { background: rgba(34, 197, 94, 0.05); border-left: 4px solid var(--success); color: #a7f3d0; }
+        .info-box-warning { background: rgba(245, 158, 11, 0.05); border-left: 4px solid var(--warning); color: #fde68a; }
+        .info-box-danger { background: rgba(239, 68, 68, 0.05); border-left: 4px solid var(--danger); color: #fecaca; }
+        .info-box-muted { background: rgba(148, 163, 184, 0.05); border-left: 4px solid var(--text-faint); color: var(--text-muted); }
+
+        .info-title {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- List Styles --- */
+        .check-list { list-style: none; }
+        .check-list li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .check-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .flag-list { list-style: none; }
+        .flag-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: flex-start;
+        }
+        .flag-item:last-child { border-bottom: none; }
+        .flag-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); margin-top: 6px; flex-shrink: 0; }
+        .flag-dot.warn { background: var(--warning); }
+        .flag-text { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            header { padding: 40px 0 20px; }
+            h1 { font-size: 2.5rem; }
+            .card { padding: 20px; border-radius: 0; border-left: none; border-right: none; }
+            .container { padding: 0; }
+            .section-header { flex-direction: column; gap: 4px; padding: 0 20px; }
+            .intro-text { padding: 0 20px; }
+            .sched-grid { grid-template-columns: 1fr; padding: 0 20px; }
+            .nav-sticky { top: 0; padding: 10px 0; background: var(--bg); }
+            .nav-wrap { border-radius: 0; border-left: none; border-right: none; }
+            .info-box { margin: 20px; }
+            .lifestyle-grid { grid-template-columns: 1fr !important; padding: 0 20px; }
+            .check-list { padding: 0 20px; }
+            .flag-list { padding: 0 20px; }
+            footer { padding: 40px 20px; }
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 60px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-faint);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1 class="animate">Gut Master Protocol</h1>
+            <p class="subtitle animate" style="animation-delay: 0.1s;">
+                Een wetenschappelijk onderbouwde gids voor darmherstel, allergie-beheersing en immuunoptimalisatie.
+            </p>
+        </div>
+    </header>
+
+    <div class="nav-sticky">
+        <div class="nav-wrap">
+            <button class="nav-btn active" onclick="scrollToSection('p0')">0 · Testen</button>
+            <button class="nav-btn" onclick="scrollToSection('p1')">1 · Reparatie</button>
+            <button class="nav-btn" onclick="scrollToSection('p1b')">1b · Histamine</button>
+            <button class="nav-btn" onclick="scrollToSection('p2')">2 · Parasieten</button>
+            <button class="nav-btn" onclick="scrollToSection('p3')">3 · Microbioom</button>
+            <button class="nav-btn" onclick="scrollToSection('p4')">4 · Metalen</button>
+            <button class="nav-btn" onclick="scrollToSection('p5')">5 · Onderhoud</button>
+            <button class="nav-btn" onclick="scrollToSection('lifestyle')">Leefstijl</button>
+            <button class="nav-btn" onclick="scrollToSection('flags')">Red Flags</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- FASE 0 -->
+        <section id="p0">
+            <div class="card animate">
+                <div class="section-header">
+                    <h2 class="section-title">Fase 0 — Voorbereiding & Testen</h2>
+                    <span class="section-duration">Vóór de start</span>
+                </div>
+                <div class="info-box info-box-success">
+                    <span class="info-title">Financieel Advies</span>
+                    Je kunt private testen overslaan als je kiest voor empirische behandeling. Echter, een <strong>HTMA</strong> (~€100) is sterk aanbevolen vóór Fase 4 om risico's met kwik-mobilisatie te vermijden.
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
+                    <div>
+                        <h3 style="font-size: 14px; color: #fff; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.1em;">Huisarts (Sowieso doen)</h3>
+                        <div class="table-container">
+                            <table>
+                                <tbody>
+                                    <tr><td><strong>hs-CRP</strong></td><td class="sup-note">Systemische ontsteking</td></tr>
+                                    <tr><td><strong>Calprotectine</strong></td><td class="sup-note">Darmontsteking marker</td></tr>
+                                    <tr><td><strong>Bloedbeeld + Ferritine</strong></td><td class="sup-note">IJzerstatus & immuuncellen</td></tr>
+                                    <tr><td><strong>Vitamine D (25-OH)</strong></td><td class="sup-note">Bepaalt startdosis D3</td></tr>
+                                    <tr><td><strong>TSH + Vrij T3/T4</strong></td><td class="sup-note">Schildklierfunctie</td></tr>
+                                    <tr><td><strong>Totaal IgE</strong></td><td class="sup-note">Ernst van allergieën</td></tr>
+                                    <tr><td><strong>Leverfuncties</strong></td><td class="sup-note">Essentieel voor Fase 4</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 14px; color: #fff; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.1em;">Private Labo (Optioneel)</h3>
+                        <div class="table-container">
+                            <table>
+                                <tbody>
+                                    <tr><td><strong>HTMA</strong></td><td class="sup-note">Zware metalen & mineralen</td></tr>
+                                    <tr><td><strong>OAT Test</strong></td><td class="sup-note">Candida & schimmelmarkers</td></tr>
+                                    <tr><td><strong>Zonuline</strong></td><td class="sup-note">Leaky Gut indicator</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FASE 1 -->
+        <section id="p1">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Fase 1 — Darmwand Reparatie</h2>
+                    <span class="section-duration">Week 1–6</span>
+                </div>
+                <p class="intro-text">
+                    Doel: de darmwand fysiek afdichten. Geen probiotica of gefermenteerd voedsel in deze fase — eerst de barrière herstellen. Voeg supplementen geleidelijk toe.
+                </p>
+
+                <div class="table-container">
+                    <table id="table-p1">
+                        <thead>
+                            <tr>
+                                <th>Supplement</th>
+                                <th>Dosis</th>
+                                <th>Timing</th>
+                                <th>Prioriteit</th>
+                                <th>Opmerking / Alternatief</th>
+                            </tr>
+                        </thead>
+                        <tbody id="p1-body">
+                            <!-- JS will populate this to ensure data integrity -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin: 40px 0 16px; font-size: 18px; color: #fff;">Dagplanning Fase 1</h3>
+                <div class="sched-grid" id="p1-sched">
+                    <!-- JS will populate -->
+                </div>
+            </div>
+        </section>
+
+        <!-- FASE 1B -->
+        <section id="p1b">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Fase 1b — Histamine Buffer</h2>
+                    <span class="section-duration">Week 3–6 (Parallel)</span>
+                </div>
+                <div class="info-box info-box-warning">
+                    <span class="info-title">Cruciaal voor jou</span>
+                    Gezien je allergie- en eczeem-patroon is deze buffer essentieel. Zonder DAO-ondersteuning kunnen gezonde toevoegingen in Fase 3 voor enorme opvlammingen zorgen.
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Supplement</th>
+                                <th>Dosis</th>
+                                <th>Timing</th>
+                                <th>Type</th>
+                                <th>Opmerking</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="Supplement" class="sup-name">DAO Enzym</td>
+                                <td data-label="Dosis" class="sup-dose">1–2 caps</td>
+                                <td data-label="Timing" class="sup-timing">Vóór elke maaltijd</td>
+                                <td data-label="Type"><span class="badge badge-essential">Essentieel</span></td>
+                                <td data-label="Opmerking" class="sup-note">Breekt histamine af. Geen voedingsalternatief.</td>
+                            </tr>
+                            <tr>
+                                <td data-label="Supplement" class="sup-name">Vitamine C</td>
+                                <td data-label="Dosis" class="sup-dose">1–2g</td>
+                                <td data-label="Timing" class="sup-timing">Bij maaltijd</td>
+                                <td data-label="Type"><span class="badge badge-recommended">Aanbevolen</span></td>
+                                <td data-label="Opmerking" class="sup-note">Natuurlijke antihistamine. Verhoogt DAO activiteit.</td>
+                            </tr>
+                            <tr>
+                                <td data-label="Supplement" class="sup-name">Quercetin Fytosoom</td>
+                                <td data-label="Dosis" class="sup-dose">120–240mg</td>
+                                <td data-label="Timing" class="sup-timing">Bij maaltijd</td>
+                                <td data-label="Type"><span class="badge badge-recommended">Aanbevolen</span></td>
+                                <td data-label="Opmerking" class="sup-note">Stabiliseert mestcellen. Reeds gestart in Fase 1.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="margin-top: 24px;">
+                    <h4 style="font-size: 14px; color: #fff; margin-bottom: 12px; text-transform: uppercase;">Low-Histamine Dieet Tips</h4>
+                    <ul class="check-list">
+                        <li><strong>Vermijden:</strong> Oude kaas, ingeblikte vis, wijn, azijn, tomaten, spinazie, slow-cooked vlees.</li>
+                        <li><strong>Kiezen:</strong> Vers vlees (direct bereid), rijst, courgette, bloemkool, appels, peren.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- FASE 2 -->
+        <section id="p2">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Fase 2 — Parasieten Protocol</h2>
+                    <span class="section-duration">Week 5–10</span>
+                </div>
+                <div class="info-box info-box-danger">
+                    <span class="info-title">Herxheimer Reactie</span>
+                    Verwacht tijdelijke vermoeidheid of huidverergering in week 1–2 door afstervende parasieten. Binders (Psyllium, Kool) zijn hier niet-onderhandelbaar.
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Supplement</th>
+                                <th>Dosis</th>
+                                <th>Timing</th>
+                                <th>Type</th>
+                                <th>Focus</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td data-label="Supplement" class="sup-name">Black Walnut Hull</td><td data-label="Dosis" class="sup-dose">500mg</td><td data-label="Timing" class="sup-timing">Vóór maaltijd</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Focus" class="sup-note">Volwassen parasieten</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Wormwood</td><td data-label="Dosis" class="sup-dose">200–400mg</td><td data-label="Timing" class="sup-timing">Vóór maaltijd</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Focus" class="sup-note">Larven</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Kruidnagel Extract</td><td data-label="Dosis" class="sup-dose">500mg</td><td data-label="Timing" class="sup-timing">Bij maaltijd</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Focus" class="sup-note">Eieren (cruciaal voor cyclus)</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Psyllium Husk</td><td data-label="Dosis" class="sup-dose">5–10g</td><td data-label="Timing" class="sup-timing">In water (apart)</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Focus" class="sup-note">Evacuatie van toxines</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Actieve Kool</td><td data-label="Dosis" class="sup-dose">1–2 caps</td><td data-label="Timing" class="sup-timing">'s Avonds laat</td><td data-label="Prioriteit"><span class="badge badge-recommended">Aanbevolen</span></td><td data-label="Focus" class="sup-note">Vangt afvalstoffen. 2u van suppl. houden!</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">TUDCA</td><td data-label="Dosis" class="sup-dose">500mg</td><td data-label="Timing" class="sup-timing">Vóór maaltijd</td><td data-label="Prioriteit"><span class="badge badge-recommended">Aanbevolen</span></td><td data-label="Focus" class="sup-note">Galstroom voor uitscheiding</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="margin-top: 16px; font-size: 13px; color: var(--text-muted);">
+                    <strong>Cyclus:</strong> 30 dagen aan → 14 dagen stop → 30 dagen aan.
+                </p>
+            </div>
+        </section>
+
+        <!-- FASE 3 -->
+        <section id="p3">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Fase 3 — Microbioom Seeding</h2>
+                    <span class="section-duration">Week 9–14</span>
+                </div>
+                <p class="intro-text">
+                    Bouw je flora op in een nu schone en herstelde darm. De volgorde van introductie is hier belangrijker dan de dosis.
+                </p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Supplement</th>
+                                <th>Introductie</th>
+                                <th>Timing</th>
+                                <th>Prioriteit</th>
+                                <th>Opmerking</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td data-label="Supplement" class="sup-name">Spore-based Probiotica</td><td data-label="Introductie" class="sup-dose">Wk 9–12</td><td data-label="Timing" class="sup-timing">Bij maaltijd</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Opmerking" class="sup-note">Overleven maagzuur. Start hiermee (Bacillus coagulans/subtilis).</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">S. Boulardii</td><td data-label="Introductie" class="sup-dose">Wk 11–14</td><td data-label="Timing" class="sup-timing">Tussen maaltijden</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Opmerking" class="sup-note">Gist die pathogene bacteriën verdringt. Werkt synergetisch.</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Multi-strain Probiotica</td><td data-label="Introductie" class="sup-dose">Wk 13+</td><td data-label="Timing" class="sup-timing">Nuchter</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Opmerking" class="sup-note">L. rhamnosus GG (histamine veilig). Start met 1 mld CFU.</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Prebiotica (GOS/Inuline)</td><td data-label="Introductie" class="sup-dose">Wk 13+</td><td data-label="Timing" class="sup-timing">Bij maaltijd</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Opmerking" class="sup-note">Voeding voor je flora. Start traag: 1g naar 5g.</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Vitamine A (Retinol)</td><td data-label="Introductie" class="sup-dose">Dagelijks</td><td data-label="Timing" class="sup-timing">Bij vet</td><td data-label="Prioriteit"><span class="badge badge-essential">Essentieel</span></td><td data-label="Opmerking" class="sup-note">Ondersteunt immuunsecretie (sIgA) in de darm.</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">CoQ10 Ubiquinol</td><td data-label="Introductie" class="sup-dose">100–200mg</td><td data-label="Timing" class="sup-timing">Bij maaltijd</td><td data-label="Prioriteit"><span class="badge badge-recommended">Aanbevolen</span></td><td data-label="Opmerking" class="sup-note">Celenergie voor huid en immuunsysteem.</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">B-Complex Actief</td><td data-label="Introductie" class="sup-dose">1 caps</td><td data-label="Timing" class="sup-timing">Bij ontbijt</td><td data-label="Prioriteit"><span class="badge badge-recommended">Aanbevolen</span></td><td data-label="Opmerking" class="sup-note">Methylvormen verplicht (MTHFR support).</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Ashwagandha KSM-66</td><td data-label="Introductie" class="sup-dose">300–600mg</td><td data-label="Timing" class="'s Avonds"></td><td data-label="Prioriteit"><span class="badge badge-recommended">Aanbevolen</span></td><td data-label="Opmerking" class="sup-note">Verlaagt cortisol (cortisol beschadigt tight junctions).</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Rhodiola Rosea</td><td data-label="Introductie" class="sup-dose">200–400mg</td><td data-label="Timing" class="'s Ochtends"></td><td data-label="Prioriteit"><span class="badge badge-optional">Optioneel</span></td><td data-label="Opmerking" class="sup-note">Adaptogeen voor HPA-as ondersteuning.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="info-box info-box-muted" style="margin-top: 24px;">
+                    <strong>Let op:</strong> Vermijd L. casei en L. bulgaricus als je gevoelig bent voor histamine.
+                </div>
+            </div>
+        </section>
+
+        <!-- FASE 4 -->
+        <section id="p4">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Fase 4 — Heavy Metal Detox</h2>
+                    <span class="section-duration">Week 14–22</span>
+                </div>
+                <div class="info-box info-box-danger">
+                    <span class="info-title">Gevaar: Herdistributie</span>
+                    <strong>R-ALA</strong> haalt kwik uit weefsels. Als er onvoldoende binders (Chlorella/Pectine) in je darm zitten, komt het kwik in je brein of nieren terecht. <strong>Nooit skippen:</strong> Binders moeten 2 weken actief zijn vóór R-ALA start.
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Supplement</th>
+                                <th>Dosis</th>
+                                <th>Timing</th>
+                                <th>Focus</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td data-label="Supplement" class="sup-name">Chlorella</td><td data-label="Dosis" class="sup-dose">1g opbouw naar 5g</td><td data-label="Timing" class="sup-timing">Bij maaltijd</td><td data-label="Focus" class="sup-note">Bindt metalen in de darm</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Modified Citrus Pectin</td><td data-label="Dosis" class="sup-dose">5g 2×/dag</td><td data-label="Timing" class="sup-timing">Tussen maaltijden</td><td data-label="Focus" class="sup-note">Bindt lood & cadmium in bloed</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">NAC (verhogen)</td><td data-label="Dosis" class="sup-dose">1200mg</td><td data-label="Timing" class="sup-timing">Nuchter</td><td data-label="Focus" class="sup-note">Precursor voor Glutathion</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">R-ALA</td><td data-label="Dosis" class="sup-dose">200–400mg</td><td data-label="Timing" class="sup-timing">Bij maaltijd</td><td data-label="Focus" class="sup-note">Mobiliseert metalen uit diep weefsel</td></tr>
+                            <tr><td data-label="Supplement" class="sup-name">Liposomale Glutathion</td><td data-label="Dosis" class="sup-dose">500mg</td><td data-label="Timing" class="sup-timing">Nuchter</td><td data-label="Focus" class="sup-note">Directe ontgifting</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- FASE 5 -->
+        <section id="p5">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Fase 5 — Onderhoud</h2>
+                    <span class="section-duration">Week 22+</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Focus</th>
+                                <th>Onderhoudsdosis</th>
+                                <th>Opmerking</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td data-label="Focus" class="sup-name">Vitamine D3 + K2</td><td data-label="Dosis" class="sup-dose">2000 IE + 100mcg</td><td data-label="Opmerking" class="sup-note">Levenslang in België</td></tr>
+                            <tr><td data-label="Focus" class="sup-name">Omega-3</td><td data-label="Dosis" class="sup-dose">1–2g</td><td data-label="Opmerking" class="sup-note">Of 3× per week vette vis</td></tr>
+                            <tr><td data-label="Focus" class="sup-name">Magnesium</td><td data-label="Dosis" class="sup-dose">200–300mg</td><td data-label="Opmerking" class="sup-note">Bisglycinaat voor het slapen</td></tr>
+                            <tr><td data-label="Focus" class="sup-name">Prebiotica</td><td data-label="Dosis" class="sup-dose">3–5g</td><td data-label="Opmerking" class="sup-note">Voed je goede bacteriën (Prei, ui, knoflook)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- LIFESTYLE -->
+        <section id="lifestyle">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Omgeving & Leefstijl</h2>
+                    <span class="section-duration">Parallel te starten</span>
+                </div>
+                
+                <div class="lifestyle-grid">
+                    <div class="lifestyle-item">
+                        <h3 style="font-size: 14px; color: #fff; margin-bottom: 16px; text-transform: uppercase;">Allergie Beheer</h3>
+                        <ul class="check-list">
+                            <li>Anti-allergie hoezen (matras EN kussen).</li>
+                            <li>Wassen op 60°C (huisstofmijt doden).</li>
+                            <li>Luchtvochtigheid < 50% in huis.</li>
+                            <li>HEPA-luchtreiniger in slaapkamer.</li>
+                            <li>Neus spoelen met zoutoplossing na pollen-blootstelling.</li>
+                        </ul>
+                    </div>
+                    <div class="lifestyle-item">
+                        <h3 style="font-size: 14px; color: #fff; margin-bottom: 16px; text-transform: uppercase;">Dagelijkse Gewoontes</h3>
+                        <ul class="check-list">
+                            <li><strong>Douchefilter:</strong> Verwijder chloor (barrière schade).</li>
+                            <li><strong>Ademhaling:</strong> 10 min diafragma (Vaguszenuw).</li>
+                            <li><strong>Slaap:</strong> Minimaal 7-8 uur (Tight Junction herstel).</li>
+                            <li><strong>Water:</strong> Gefilterd water drinken.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RED FLAGS -->
+        <section id="flags">
+            <div class="card">
+                <div class="section-header">
+                    <h2 class="section-title">Red Flags & Tijdslijn</h2>
+                    <span class="section-duration">Belangrijk</span>
+                </div>
+                
+                <div class="flag-list">
+                    <div class="flag-item">
+                        <div class="flag-dot"></div>
+                        <div class="flag-text"><strong>L-Glutamine:</strong> Stop bij hoofdpijn of rusteloosheid (glutamaat overschot).</div>
+                    </div>
+                    <div class="flag-item">
+                        <div class="flag-dot"></div>
+                        <div class="flag-text"><strong>Probiotica:</strong> Als eczeem verergert, is de darm nog niet dicht. Ga 2 weken terug naar Fase 1.</div>
+                    </div>
+                    <div class="flag-item">
+                        <div class="flag-dot warn"></div>
+                        <div class="flag-text"><strong>R-ALA:</strong> Stop direct bij tintelingen of brain fog (kwik herdistributie).</div>
+                    </div>
+                    <div class="flag-item">
+                        <div class="flag-dot warn"></div>
+                        <div class="flag-text"><strong>Schildklier:</strong> Abnormale bloedwaarden? Pak dit EERST aan, anders faalt het protocol.</div>
+                    </div>
+                </div>
+
+                <div class="info-box info-box-muted" style="margin-top: 32px;">
+                    <span class="info-title">Verwachte Tijdslijn</span>
+                    Week 6–8: Merkbare huidverbetering. <br>
+                    Maand 3–4: Meer energie, minder allergie-reacties. <br>
+                    Maand 6–9: Structureel herstel voltooid. <strong>Stop niet te vroeg.</strong>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <div class="container">
+            &copy; 2026 Gut Master Protocol · Gebruik op eigen risico · Raadpleeg altijd een specialist.
+        </div>
+    </footer>
+
+    <button id="backToTop" class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+    </button>
+
+    <script>
+        // --- DATA PREPARATION ---
+        const p1Data = [
+            { name: 'L-Glutamine', dose: '5–10g', time: 'Ochtend nuchter', prio: 'essential', note: 'Herbouwt tight junctions. Stop bij hoofdpijn.' },
+            { name: 'Zink-carnosine', dose: '75mg 2×', time: 'Bij maaltijd', prio: 'essential', note: 'Specifiek voor maag/darmwand.' },
+            { name: 'Omega-3 (EPA/DHA)', dose: '2–3g', time: 'Bij vet', prio: 'essential', note: 'Anti-inflammatoir. Alt: 4×/wk vette vis.' },
+            { name: 'Butyraat', dose: '300–600mg', time: 'Bij maaltijd', prio: 'essential', note: 'Brandstof voor darmcellen.' },
+            { name: 'Betaine HCl', dose: '1 caps', time: 'Vóór grote maaltijd', prio: 'essential', note: 'Maagzuur optimalisatie. Stop bij branden.' },
+            { name: 'NAC', dose: '600mg', time: 'Ochtend nuchter', prio: 'essential', note: 'Detox precursor. Lever ondersteuning.' },
+            { name: 'Vitamine D3', dose: '3-5000 IE', time: 'Bij vet', prio: 'essential', note: 'Bloedtest bepaalt exacte dosis.' },
+            { name: 'K2 MK-7', dose: '100-200mcg', time: 'Bij vet', prio: 'essential', note: 'Samen met D3 nemen.' },
+            { name: 'Magnesium Bisglycinaat', dose: '300-400mg', time: 'Voor slapen', prio: 'essential', note: 'Slaap & stress buffer.' },
+            { name: 'Glycine', dose: '3–5g', time: 'Ontbijt/Slapen', prio: 'essential', note: 'Alt: Beef gelatin in bouillon.' },
+            { name: 'Psyllium Husk', dose: '5g', time: 'Apart in water', prio: 'recommended', note: 'Start direct voor evacuatie.' },
+            { name: 'Quercetin Fytosoom', dose: '120–240mg', time: 'Bij maaltijd', prio: 'recommended', note: 'Stabiliseert mestcellen. Relevant voor eczeem.' },
+            { name: 'GLA (Teunisbloem)', dose: '500-1000mg', time: 'Bij maaltijd', prio: 'recommended', note: 'Huidbarrière herstel. Cruciaal bij eczeem.' },
+            { name: 'Selenium', dose: '200mcg', time: 'Bij maaltijd', prio: 'recommended', note: 'Alt: 3 Braziliaanse noten p/dag.' },
+            { name: 'Milk Thistle', dose: '300mg', time: 'Bij maaltijd', prio: 'recommended', note: 'Wacht op bloedtest lever.' },
+            { name: 'Taurine', dose: '500-1000mg', time: 'Vóór maaltijd', prio: 'recommended', note: 'Galzuur & lever support.' },
+            { name: 'Curcumine Fytosoom', dose: '500mg', time: 'Bij vet', prio: 'recommended', note: 'Anti-inflammatoir voor darm & huid.' },
+            { name: 'Collageen Peptiden', dose: '10g', time: 'Bij maaltijd', prio: 'recommended', note: 'Redundant bij Glutamine + Glycine.' },
+            { name: 'TUDCA', dose: '250mg', time: 'Vóór maaltijd', prio: 'optional', note: 'Verplicht in Fase 4. Galstroom support.' },
+            { name: 'Appelpectine', dose: '5g', time: 'Met Psyllium', prio: 'optional', note: 'Extra binder.' },
+            { name: 'Beef Gelatin', dose: '1-2 el', time: 'In bouillon', prio: 'food', note: 'Voedingsalternatief voor glycine.' }
+        ];
+
+        const p1Sched = {
+            "Ochtend Nuchter": ["L-Glutamine 5-10g", "NAC 600mg", "Liposomale Glutathion (Fase 4+)"],
+            "Ontbijt": ["Betaine HCl (vóór)", "Omega-3 2–3g", "Vitamine D3 + K2", "Zink-carnosine 75mg", "GLA 500mg", "Selenium / 3 Braziliaanse noten", "B-complex (Fase 3+)"],
+            "Lunch": ["Betaine HCl (vóór)", "Taurine 500mg", "Curcumine Fytosoom 500mg", "Milk Thistle 300mg", "Zink-carnosine 75mg"],
+            "Diner": ["Betaine HCl (vóór)", "Butyraat 300mg", "TUDCA 250mg", "CoQ10 (Fase 3+)", "Quercetin Fytosoom"],
+            "Voor Slapen": ["Magnesium Bisglycinaat 400mg", "Glycine 3–5g", "Ashwagandha (Fase 3+)"],
+            "Avonds Laat": ["Actieve Kool 1–2 caps (Fase 2)", "⚠️ 2u na laatste supplement!"]
+        };
+
+        // --- RENDER FUNCTIONS ---
+        function renderP1() {
+            const body = document.getElementById('p1-body');
+            body.innerHTML = p1Data.map(item => `
+                <tr>
+                    <td data-label="Supplement" class="sup-name">${item.name}</td>
+                    <td data-label="Dosis" class="sup-dose">${item.dose}</td>
+                    <td data-label="Timing" class="sup-timing">${item.time}</td>
+                    <td data-label="Prioriteit"><span class="badge badge-${item.prio}">${item.prio === 'essential' ? 'Essentieel' : item.prio === 'recommended' ? 'Aanbevolen' : item.prio === 'food' ? 'Food' : 'Optioneel'}</span></td>
+                    <td data-label="Opmerking" class="sup-note">${item.note}</td>
+                </tr>
+            `).join('');
+
+            const schedGrid = document.getElementById('p1-sched');
+            schedGrid.innerHTML = Object.entries(p1Sched).map(([time, items]) => `
+                <div class="sched-card">
+                    <div class="sched-time">${time}</div>
+                    ${items.map(i => `<div class="sched-item">${i}</div>`).join('')}
+                </div>
+            `).join('');
+        }
+
+        // --- NAVIGATION LOGIC ---
+        function scrollToSection(id) {
+            const section = document.getElementById(id);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+                
+                // Update active state
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.getAttribute('onclick').includes(id));
+                });
+            }
+        }
+
+        // --- INITIALIZE ---
+        window.onload = () => {
+            renderP1();
+            
+            // Scroll spy & Back to Top
+            window.addEventListener('scroll', () => {
+                // Back to Top button
+                const btt = document.getElementById("backToTop");
+                if (window.pageYOffset > 500) {
+                    btt.classList.add("show");
+                } else {
+                    btt.classList.remove("show");
+                }
+
+                // Scroll Spy
+                const sections = ['p0', 'p1', 'p1b', 'p2', 'p3', 'p4', 'p5', 'lifestyle', 'flags'];
+                let current = '';
+                
+                sections.forEach(s => {
+                    const el = document.getElementById(s);
+                    if (el) {
+                        const rect = el.getBoundingClientRect();
+                        if (rect.top <= 150) current = s;
+                    }
+                });
+                
+                if (current) {
+                    document.querySelectorAll('.nav-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.getAttribute('onclick').includes(current));
+                    });
+                }
+            });
+        };
+    </script>
+</body>
+</html>
